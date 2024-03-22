@@ -3,7 +3,7 @@ from flask import jsonify
 import requests
 
 # Specify the file to upload
-file_path = 'BotFaceSinFondo.png'
+file_path = 'Apps/Chatbot/BotFaceSinFondo.png'
 
 # Specify the JSON data
 json_data = {'text': 'try2'}

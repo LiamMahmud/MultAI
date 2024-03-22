@@ -1,11 +1,9 @@
 import time
 import uuid
-from PIL import Image
+from QueueHandler.QueueHandler import Handler
 from flask import Flask, request, jsonify
 import os
-import _pickle as pickle
-import json
-from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 
@@ -17,6 +15,26 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 def inference(model):
     return(f"this is {model} inference")
+
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    # If the file exists and it is allowed
+    request_id = uuid.uuid4()
+    if request.form.get("text"):
+        string_data = request.form.get('text')
+        handler.queue.append(request_id)
+        if request.form.get("text") == "try1":
+            time.sleep(10)
+            print(handler.queue)
+        while handler.queue[0] != request_id:
+            print("waiting in queue")
+            time.sleep(3)
+        handler.queue.pop(0)
+        return jsonify({'message': 'File uploaded successfully', 'string': string_data})
+
+
+    return jsonify({'error': 'Invalid file'})
 
 # @app.route('/image', methods=['POST'])
 # def upload():
@@ -43,24 +61,6 @@ def inference(model):
 #
 #     return jsonify({'error': 'Invalid file'})
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    # If the file exists and it is allowed
-    request_id = uuid.uuid4()
-    if request.form.get("text"):
-        string_data = request.form.get('text')
-        handler.queue.append(request_id)
-        if request.form.get("text") == "try1":
-            time.sleep(10)
-            print(handler.queue)
-        while handler.queue[0] != request_id:
-            print("waiting in queue")
-            time.sleep(3)
-        handler.queue.pop(0)
-        return jsonify({'message': 'File uploaded successfully', 'string': string_data})
-
-
-    return jsonify({'error': 'Invalid file'})
 
 # @app.route('/audio', methods=['POST'])
 # def upload():
@@ -91,10 +91,6 @@ def chat():
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-class Handler:
-    def __init__(self):
-        self.queue = []
 
 
 if __name__ == '__main__':

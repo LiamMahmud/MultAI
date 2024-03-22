@@ -1,5 +1,6 @@
 from MemoryHandler import MemoryHandler
 
+
 class RamHandler(MemoryHandler):
     def __init__(self, available_space):
         self.available_space = available_space
