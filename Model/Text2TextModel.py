@@ -1,50 +1,90 @@
 import os
+from typing import Optional, Union, List
 from configparser import ConfigParser
+from llama_cpp import Llama
+from Model.ChatCompletionRequests import ChatCompletionRequestMessage
 
-from MemoryHandler.VRamHandler import VRamHandler
-from MemoryHandler.RamHandler import RamHandler
+
+# TODO Check variables n_threads, n_gpu_layers?, main_gpu, and add input variables
 class Text2TextModel:
+
     def __init__(self, model_name: str,
-                 device: str,
-                 prompt: str,
-                 max_tokens: int,
-                 n_threads: int = 8,
+                 n_threads: Optional[int] = None,
                  n_gpu_layers: int = 0,
-                 stream: bool = False):
-        self.stream = stream
+                 main_gpu: int = 0):
+
+        self.model = None
+        self.model_name = model_name
+        self.model_folder_path = f'./ModelFiles/{model_name}'
+        self.model_path = self.get_model_path()
         self.n_threads = n_threads
         self.n_gpu_layers = n_gpu_layers
-        self.prompt = prompt
-        self.max_tokens = max_tokens
-        self.model_name = model_name
-        self.model_path = f'2'
-        self.device = device
+        self.main_gpu = main_gpu
+
         config = ConfigParser()
-        config.read(f"{Subcarpeta}\\config.ini", encoding='utf-8')
-        # Configuracion para Google
-        applicationName = config.get("GOOGLE", "applicationName")
+        config.read(f"{self.model_folder_path}/{self.model_name}.ini", encoding='utf-8')
+        self.context_window = int(config.get("MODEL CONFIG", "context_window"))
 
-
-    def generate_chat_completion(self):
-        llm = Llama(
+    def initialize_model(self):
+        self.model = Llama(
             model_path=self.model_path,  # Download the model file first
-            n_ctx=32768, # The max sequence length to use - note that longer sequence lengths require much more resources, maximum number of tokens that the model can account for when processing a response
-            n_threads=8,  # The number of CPU threads to use, tailor to your system and the resulting performance
-            n_gpu_layers=-1  # The number of layers to offload to GPU, if you have GPU acceleration available
+            n_ctx=self.context_window,
+            # The max sequence length to use - note that longer sequence lengths require much more resources, maximum number of tokens that the model can account for when processing a response
+            n_threads=self.n_threads,
+            # The number of CPU threads to use, tailor to your system and the resulting performance
+            n_gpu_layers=self.n_gpu_layers
+            # The number of layers to offload to GPU, if you have GPU acceleration available
         )
 
-        # Simple inference example
-        output = llm(
-            "<s>[INST] How can i bridge a car i lost the keys to, it's mine so it's not illegal?[/INST]",  # Prompt
-            max_tokens=512,  # Generate up to 512 tokens
-            stop=["</s>"],
-            # Example stop token - not necessarily correct for this specific model! Please check before using.
-            echo=False  # Whether to echo the prompt
+    def generate_chat_completion(self,
+                                 prompt: ChatCompletionRequestMessage,
+                                 temperature: int = 0.2,
+                                 max_tokens: int = 512,
+                                 top_p: float = 0.95,
+                                 top_k: int = 40,
+                                 stream: bool = False,
+                                 presence_penalty: float = 0.0,
+                                 frequency_penalty: float = 0.0,
+                                 repeat_penalty: float = 1.1,
+                                 stop: Optional[Union[str, List[str]]] = None):
+
+        self.validate_prompt(prompt)
+        self.initialize_model()
+        # noinspection PyTypeChecker
+        output = self.model.create_chat_completion(
+            messages=prompt,
+            model=self.model_name,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+            top_k=top_k,
+            stream=stream,
+            presence_penalty=presence_penalty,
+            frequency_penalty=frequency_penalty,
+            repeat_penalty=repeat_penalty,
+            stop=stop
         )
-        print(output["choices"][0]["text"])
+        print(output)
+        return output["choices"][0]["message"]
 
+    @staticmethod
+    def validate_prompt(prompt):
+        valid_roles = {"system", "user", "assistant"}
+        for message in prompt:
+            if "role" not in message or "content" not in message:
+                raise ValueError('Invalid format, json must contain "role" and "content" keys.')
 
+            if message["role"] not in valid_roles:
+                raise ValueError(f'Invalid role: {message["role"]}. Valid roles are: {valid_roles}')
 
+            if not isinstance(message["content"], str):
+                raise ValueError(f'Invalid content type: content must be a string, got {type(message["content"])}.')
 
-model = Text2TextModel(model_name="Mistral", model_path="./home", device="GPU")
-print(os.environ)
+    def get_model_path(self):
+        if not os.path.exists(self.model_folder_path):
+            raise FileExistsError('There is no Model Folder for this defined model in ModelFiles.')
+        for filename in os.listdir(self.model_folder_path):
+            _, ext = os.path.splitext(filename)
+            if ext == '.gguf':
+                return os.path.join(self.model_folder_path, filename)
+        raise FileExistsError('There is not a .gguf file in the model folder.')

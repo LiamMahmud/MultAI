@@ -2,7 +2,9 @@
 
 .idea/MultIA.iml
 /.idea
-Tests/mistral-7b-instruct-v0.2.Q5_K_M.gguf
-Tests/llama-2-7b-chat.Q5_K_M.gguf
+ModelFiles/Mistral-7b/mistral-7b-instruct-v0.2.Q5_K_M.gguf
+ModelFiles/Llama2-7b/llama-2-7b-chat.Q5_K_M.gguf
 Tests/phi-2.Q8_0.gguf
 Tests/model.pth
+/.idea
+/ModelFiles
