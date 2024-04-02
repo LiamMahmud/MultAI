@@ -5,13 +5,13 @@ from llama_cpp import Llama
 from Model.ChatCompletionRequests import ChatCompletionRequestMessage
 
 
-# TODO Check variables n_threads, n_gpu_layers?, main_gpu, and add input variables
 class Text2TextModel:
 
     def __init__(self, model_name: str,
                  n_threads: Optional[int] = None,
                  n_gpu_layers: int = 0,
-                 main_gpu: int = 0):
+                 main_gpu: int = 0,
+                 **kwargs):
 
         self.model = None
         self.model_name = model_name
@@ -46,13 +46,13 @@ class Text2TextModel:
                                  presence_penalty: float = 0.0,
                                  frequency_penalty: float = 0.0,
                                  repeat_penalty: float = 1.1,
-                                 stop: Optional[Union[str, List[str]]] = None):
+                                 stop: Optional[Union[str, List[str]]] = None,
+                                 **kwargs):
 
         self.validate_prompt(prompt)
         self.initialize_model()
         # noinspection PyTypeChecker
-        output = self.model.create_chat_completion(
-            messages=prompt,
+        output = self.model.create_chat_completion(messages=prompt,
             model=self.model_name,
             temperature=temperature,
             max_tokens=max_tokens,
@@ -65,13 +65,16 @@ class Text2TextModel:
             stop=stop
         )
         print(output)
-        return output["choices"][0]["message"]
+        return output
 
     @staticmethod
     def validate_prompt(prompt):
         valid_roles = {"system", "user", "assistant"}
         for message in prompt:
             if "role" not in message or "content" not in message:
+                print(message["content"])
+                print("role" in message)
+                print("content" in message)
                 raise ValueError('Invalid format, json must contain "role" and "content" keys.')
 
             if message["role"] not in valid_roles:
