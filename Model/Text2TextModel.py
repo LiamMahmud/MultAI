@@ -26,6 +26,7 @@ class Text2TextModel:
         self.context_window = int(config.get("MODEL CONFIG", "context_window"))
 
     def initialize_model(self):
+
         self.model = Llama(
             model_path=self.model_path,  # Download the model file first
             n_ctx=self.context_window,
@@ -50,7 +51,6 @@ class Text2TextModel:
                                  **kwargs):
 
         self.validate_prompt(prompt)
-        self.initialize_model()
         # noinspection PyTypeChecker
         output = self.model.create_chat_completion(messages=prompt,
             model=self.model_name,
@@ -64,7 +64,6 @@ class Text2TextModel:
             repeat_penalty=repeat_penalty,
             stop=stop
         )
-        print(output)
         return output
 
     @staticmethod
@@ -72,9 +71,6 @@ class Text2TextModel:
         valid_roles = {"system", "user", "assistant"}
         for message in prompt:
             if "role" not in message or "content" not in message:
-                print(message["content"])
-                print("role" in message)
-                print("content" in message)
                 raise ValueError('Invalid format, json must contain "role" and "content" keys.')
 
             if message["role"] not in valid_roles:

@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, Response, stream_with_context, abort
 import os
 from api_error_handler import internal_server_error, bad_request
 from Model.Text2TextModel import Text2TextModel
+from MemoryHandler.MemoryHandler import MemoryHandler
 
 app = Flask(__name__)
 
@@ -19,48 +20,48 @@ def inference(model):
     return (f"this is {model} inference")
 
 
+# TODO Intentar pasar stream_output a chat_utils (quizás haciendo que tanto api como utils dependan de queue)
 def stream_output(generator):
     try:
         for token in generator:
             if "content" in token['choices'][0]['delta']:
                 time.sleep(0.2)
                 content = token['choices'][0]['delta']["content"]
-                print(content)
                 yield content
-        handler.queue.pop(0)
     except GeneratorExit:
-        handler.queue.pop(0)
         print("Upsss!")
 
 
 @app.route('/chat', methods=['POST'])
 def chat():
     # If the file exists and it is allowed
-    try:
-        request_id = uuid.uuid4()
-        config = request.get_json()
-        print(config)
-        if "model_name" not in config or "prompt" not in config:
-            return bad_request("model_name and prompt are necessary keys")
-        handler.queue.append(request_id)
-        while handler.queue[0] != request_id:
-            print("waiting in queue")
-            time.sleep(2)
-        output = Text2TextModel(**config).generate_chat_completion(**config)
-        if "stream" in config and config["stream"] == True:
-            return Response(stream_with_context(stream_output(output)), mimetype='text/plain')
-        handler.queue.pop(0)
-        return jsonify({'message': 'File uploaded successfully', 'string': output['choices'][0]['message']})
-    except:
-        handler.queue.pop(0)
-        abort(500)
+    # try:
+    model_config = request.get_json()
+
+    if "model_name" not in model_config or "prompt" not in model_config:
+        return bad_request("model_name and prompt are necessary keys")
+
+    model_config["model_type"] = "chat"
+
+    req = queue_handler.add_request(model_config)
+    queue_handler.update_queue()
+    output = queue_handler.resolve_request(req)
+    # print(output)
+
+    # if "stream" in model_config and model_config["stream"] == True:
+    #     return Response(stream_with_context(stream_output(output)), mimetype='text/plain')
+    # queue_handler.remove_request(req)
+
+    return jsonify({'message': 'File uploaded successfully', 'string': output['choices'][0]['message']})
+    # except Exception as e:
+    #     print(e)
 
 
-def prueba():
-    for e in range(20):
-        yield str(e)
-        print(e)
-        time.sleep(0.2)
+if __name__ == '__main__':
+    memory_handler = MemoryHandler()
+    queue_handler = Handler(memory_handler)
+    app.run(debug=True)
+
 # @app.route('/image', methods=['POST'])
 # def upload():
 #     # Check if the POST request has the file part
@@ -113,13 +114,9 @@ def prueba():
 #     return jsonify({'error': 'Invalid file'})
 
 # Function to check if the file extension is allowed
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# def allowed_file(filename):
+#     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-if __name__ == '__main__':
-    handler = Handler()
-    app.run(debug=True)
-
-    # app.run(debug=True)
+# app.run(debug=True)
