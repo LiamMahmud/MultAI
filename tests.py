@@ -17,7 +17,7 @@ i = {"model_name": "Mistral-7b", "n_gpu_layers": -1, "n_threads": 14, "main_gpu"
      }
 x = Text2TextModel(**i)
 
-output = x.generate_chat_completion(**i)
+output = x.inference(**i)
 
 print(output['choices'][0]['message'])
 # for out in output:

@@ -21,15 +21,14 @@ llm = Llama(
 
 
 # llm = Llama(model_path="./mistral-7b-instruct-v0.2.Q5_K_M.gguf", chat_format="llama-2")  # Set chat_format according to the model you are using
-x = llm.create_chat_completion(
+print(llm.create_chat_completion(
     messages = [
         {"role": "system", "content": "You are a question answering assistant."},
         {"role": "user", "content": "Tell me a number from 1 to 100"},
         {'role': 'assistant', 'content': '  Sure! The answer is... 42!'},
         {"role": "user", "content": "Do you remember what number you said before?"}
-    ],
-    stream=True
-)
+    ]
+))
 
 
 

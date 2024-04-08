@@ -26,7 +26,6 @@ class Text2TextModel:
         self.context_window = int(config.get("MODEL CONFIG", "context_window"))
 
     def initialize_model(self):
-
         self.model = Llama(
             model_path=self.model_path,  # Download the model file first
             n_ctx=self.context_window,
@@ -37,33 +36,33 @@ class Text2TextModel:
             # The number of layers to offload to GPU, if you have GPU acceleration available
         )
 
-    def generate_chat_completion(self,
-                                 prompt: ChatCompletionRequestMessage,
-                                 temperature: int = 0.2,
-                                 max_tokens: int = 512,
-                                 top_p: float = 0.95,
-                                 top_k: int = 40,
-                                 stream: bool = False,
-                                 presence_penalty: float = 0.0,
-                                 frequency_penalty: float = 0.0,
-                                 repeat_penalty: float = 1.1,
-                                 stop: Optional[Union[str, List[str]]] = None,
-                                 **kwargs):
+    def inference(self,
+                  prompt: ChatCompletionRequestMessage,
+                  temperature: int = 0.2,
+                  max_tokens: int = 512,
+                  top_p: float = 0.95,
+                  top_k: int = 40,
+                  stream: bool = False,
+                  presence_penalty: float = 0.0,
+                  frequency_penalty: float = 0.0,
+                  repeat_penalty: float = 1.1,
+                  stop: Optional[Union[str, List[str]]] = None,
+                  **kwargs):
 
         self.validate_prompt(prompt)
         # noinspection PyTypeChecker
         output = self.model.create_chat_completion(messages=prompt,
-            model=self.model_name,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            top_k=top_k,
-            stream=stream,
-            presence_penalty=presence_penalty,
-            frequency_penalty=frequency_penalty,
-            repeat_penalty=repeat_penalty,
-            stop=stop
-        )
+                                                   model=self.model_name,
+                                                   temperature=temperature,
+                                                   max_tokens=max_tokens,
+                                                   top_p=top_p,
+                                                   top_k=top_k,
+                                                   stream=stream,
+                                                   presence_penalty=presence_penalty,
+                                                   frequency_penalty=frequency_penalty,
+                                                   repeat_penalty=repeat_penalty,
+                                                   stop=stop
+                                                   )
         return output
 
     @staticmethod

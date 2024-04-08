@@ -19,10 +19,13 @@ class Handler:
         self.queue.remove(request)
 
     def check_turn(self, request):
-        request_index = self.queue.index(request)
-        if request_index == 0:
-            return True
-        return False
+        try:
+            request_index = self.queue.index(request)
+            if request_index == 0:
+                return True
+            return False
+        except:
+            return False
 
     def resolve_request(self, request):
         """
@@ -31,16 +34,15 @@ class Handler:
         :return: inference output
         """
         while True:
-            with self.lock:
-                if self.check_turn(request):
+            if self.check_turn(request):
+                with self.lock:
                     output = self.memory_handler.inference(model_config=request["model_config"])
                     print("done 0")
-                    self.remove_request(request)
                     return output
 
     def update_queue(self):
         reorder = []
-        hold = [[],[]]
+        hold = [[], []]
         last = []
         for e in self.queue:
             if e["priority"] == 0:
