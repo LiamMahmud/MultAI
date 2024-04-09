@@ -10,8 +10,7 @@ class Handler:
         self.memory_handler = memory_handler
         self.lock = threading.Lock()
 
-    def add_request(self, model_config):
-        reqid = uuid.uuid4()
+    def add_request(self, model_config, reqid=uuid.uuid4()):
         self.queue.append({"request_uuid": reqid, "model_config": model_config, "priority": model_config["priority"]})
         return {"request_uuid": reqid, "model_config": model_config, "priority": model_config["priority"]}
 
@@ -37,7 +36,7 @@ class Handler:
             if self.check_turn(request):
                 with self.lock:
                     output = self.memory_handler.inference(model_config=request["model_config"])
-                    print("done 0")
+                    print("Done")
                     return output
 
     def update_queue(self):

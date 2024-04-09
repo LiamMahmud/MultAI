@@ -1,17 +1,16 @@
+import time
 from QueueHandler.QueueHandler import Handler
 from flask import Flask, request, jsonify, Response, stream_with_context, abort
 from api_error_handler import internal_server_error, bad_request
 from MemoryHandler.MemoryHandler import MemoryHandler
-from chat_endpoint_utils import stream_output, allowed_audio_file
+from chat_endpoint_utils import stream_output, validate_audio_request
 from werkzeug.utils import secure_filename
-import librosa
-import tempfile
+from waitress import serve
 import os
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+UPLOAD_FOLDER = './uploads'
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -28,6 +27,7 @@ def inference(model):
 def chat():
     # If the file exists and it is allowed
     try:
+
         model_config = request.get_json()
 
         if "model_name" not in model_config or "prompt" not in model_config:
@@ -36,7 +36,9 @@ def chat():
         model_config["model_type"] = "chat"
 
         req = queue_handler.add_request(model_config)
+
         queue_handler.update_queue()
+
         output = queue_handler.resolve_request(req)
         # print(output)
 
@@ -46,51 +48,41 @@ def chat():
         # return jsonify({'message': 'File uploaded successfully', 'string': output['choices'][0]['message']})
         output["choices"][0]["message"]["content"] = output["choices"][0]["message"]["content"].strip()
         queue_handler.remove_request(req)
+
+
         return jsonify(output)
     except Exception as e:
         return internal_server_error(e)
 
-
+# TODO fix files overwriting when same name
 @app.route('/audio/<task>', methods=['POST'])
-def upload(task):
-    # Check if the POST request has the file part
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
+def audio(task):
+    # try:
+    model_config = validate_audio_request(task)
+    model_config["task"] = "transcribe" if task == "transcriptions" else "translate"
 
-    file = request.files['file']
+    req = queue_handler.add_request(model_config)
+    queue_handler.update_queue()
+    output = queue_handler.resolve_request(req)
+    queue_handler.remove_request(req)
+    os.remove(f"./uploads/{model_config['filename']}")
 
-    # If the user does not select a file, the browser submits an empty file without a filename
-    if file.filename == '':
-        return bad_request('No selected file')
-    print(file.filename)
+    return jsonify(output)
+    # except Exception as e:
+    #     return e
+        # return bad_request(str(e))
 
-    # If the file exists and it is allowed
-    if file and allowed_audio_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-        model_config = request.form.to_dict()
 
-        model_config["model_type"] = "audio"
-        if "priority" not in model_config:
-            model_config["priority"] = 1
-        model_config["filename"] = filename
-        print(model_config)
-        req = queue_handler.add_request(model_config)
-        queue_handler.update_queue()
-        output = queue_handler.resolve_request(req)
-        queue_handler.remove_request(req)
-
-        # Return a JSON response
-        return jsonify(output)
-
-    return jsonify({'error': 'Invalid file'})
 
 
 if __name__ == '__main__':
     memory_handler = MemoryHandler()
     queue_handler = Handler(memory_handler)
     app.run(debug=True)
+
+# serve(app, host='0.0.0.0', port=8080)
+
 
 # @app.route('/image', methods=['POST'])
 # def upload():

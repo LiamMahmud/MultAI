@@ -12,7 +12,7 @@ prompt = [
     {"role": "user", "content": "Do you remember what number you said before?"}
 ]
 
-url = 'http://localhost:5000/chat/completions'
+url = 'http://localhost:8080/chat/completions'
 # def throw_request(priority):
 #     i = {"model_name": "Llama2-7b", "n_gpu_layers": -1, "n_threads": 14, "main_gpu": 0,
 #          "prompt": prompt, "temperature": 0.1, "max_tokens": 512, "top_p": 0.95,

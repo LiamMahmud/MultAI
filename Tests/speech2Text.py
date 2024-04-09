@@ -1,7 +1,7 @@
 import whisper
 
 model = whisper.load_model("medium")
-result = model.transcribe("../ECDLR.m4a", initial_prompt="Diez Hordenes, Dalinar, Roshar", language=None)
+result = model.transcribe("../ECDLR.m4a", initial_prompt="Diez Hordenes, Dalinar, Roshar", language=None, task="transcribe")
 print(result)
 print(whisper.available_models())
 # import whisper
