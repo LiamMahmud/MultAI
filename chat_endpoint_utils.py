@@ -6,7 +6,7 @@ from flask import jsonify, request
 from werkzeug.utils import secure_filename
 from api_error_handler import bad_request
 
-UPLOAD_FOLDER = './uploads'
+UPLOAD_FOLDER = './media'
 
 
 def stream_output(queue_handler, generator, req):
@@ -34,25 +34,37 @@ def validate_audio_request(task):
             raise ValueError('No selected file')
         model_config = request.form.to_dict()
         if "model_name" not in model_config:
-            return ValueError("Model needs to be picked")
+            raise ValueError("Model needs to be picked")
         if not allowed_audio_file(file.filename):
-            return ValueError("Not supported filetype")
-
+            raise ValueError("Not supported filetype")
+        model_config["task"] = "transcribe" if task == "transcriptions" else "translate"
         if file:
-            reqid = uuid.uuid4()
-            filename = secure_filename(filename = secure_filename(file.filename.split(".")[0] + str(reqid)[:8] + "." + file.filename.split(".")[1]))
+            filename = f'InputAudio.{file.filename.split(".")[1]}'
             model_config["filename"] = filename
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            file.save(os.path.join(UPLOAD_FOLDER + "/AudioInputs", filename))
 
             model_config["model_type"] = "audio"
             if "priority" not in model_config:
                 model_config["priority"] = 1
             return model_config
     if task.lower() == "speech":
-        pass
+        model_config = request.form.to_dict()
+        if "model_name" not in model_config or "prompt" not in model_config:
+            raise ValueError("model_name and prompt are necessary keys")
+
+        model_config["model_type"] = "audio"
+        model_config["priority"] = 1
+        model_config["task"] = "speech"
+        return model_config
+
     raise ValueError("Incorrect endpoint")
 
 
-def validate_chat_request(model_config):
+def validate_chat_request():
+    model_config = request.get_json()
     if "model_name" not in model_config or "prompt" not in model_config:
-        return bad_request("model_name and prompt are necessary keys")
+        raise ValueError("model_name and prompt are necessary keys")
+
+    model_config["model_type"] = "chat"
+    model_config["priority"] = 1
+    return model_config

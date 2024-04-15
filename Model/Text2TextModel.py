@@ -15,7 +15,7 @@ class Text2TextModel:
 
         self.model = None
         self.model_name = model_name
-        self.model_folder_path = f'./ModelFiles/{model_name}'
+        self.model_folder_path = f'./ModelFiles/Chat/{model_name}'
         self.model_path = self.get_model_path()
         self.n_threads = n_threads
         self.n_gpu_layers = n_gpu_layers
@@ -50,6 +50,7 @@ class Text2TextModel:
                   **kwargs):
 
         self.validate_prompt(prompt)
+        print("")
         # noinspection PyTypeChecker
         output = self.model.create_chat_completion(messages=prompt,
                                                    model=self.model_name,

@@ -1,16 +1,15 @@
-import time
-from QueueHandler.QueueHandler import Handler
-from flask import Flask, request, jsonify, Response, stream_with_context, abort
-from api_error_handler import internal_server_error, bad_request
-from MemoryHandler.MemoryHandler import MemoryHandler
-from chat_endpoint_utils import stream_output, validate_audio_request
-from werkzeug.utils import secure_filename
-from waitress import serve
 import os
+import io
+from flask import Flask, request, jsonify, Response, stream_with_context, send_file, after_this_request
+import wave
+from MemoryHandler.MemoryHandler import MemoryHandler
+from QueueHandler.QueueHandler import Handler
+from api_error_handler import internal_server_error, bad_request
+from chat_endpoint_utils import stream_output, validate_audio_request, validate_chat_request
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = './uploads'
+UPLOAD_FOLDER = './media'
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -27,15 +26,13 @@ def inference(model):
 def chat():
     # If the file exists and it is allowed
     try:
+        model_config = validate_chat_request()
+    except Exception as e:
+        print(e)
+        return bad_request(str(e))
 
-        model_config = request.get_json()
-
-        if "model_name" not in model_config or "prompt" not in model_config:
-            return bad_request("model_name and prompt are necessary keys")
-
-        model_config["model_type"] = "chat"
-
-        req = queue_handler.add_request(model_config)
+    req = queue_handler.add_request(model_config)
+    try:
 
         queue_handler.update_queue()
 
@@ -49,37 +46,44 @@ def chat():
         output["choices"][0]["message"]["content"] = output["choices"][0]["message"]["content"].strip()
         queue_handler.remove_request(req)
 
-
         return jsonify(output)
     except Exception as e:
+        queue_handler.remove_request(req)
         return internal_server_error(e)
+
 
 # TODO fix files overwriting when same name
 @app.route('/audio/<task>', methods=['POST'])
 def audio(task):
-    # try:
-    model_config = validate_audio_request(task)
-    model_config["task"] = "transcribe" if task == "transcriptions" else "translate"
+    @after_this_request
+    def remove_file(response):
+        queue_handler.remove_request(req)
+        return response
+
+    try:
+        model_config = validate_audio_request(task)
+    except Exception as e:
+        print(e)
+        return bad_request(str(e))
 
     req = queue_handler.add_request(model_config)
-    queue_handler.update_queue()
-    output = queue_handler.resolve_request(req)
-    queue_handler.remove_request(req)
-    os.remove(f"./uploads/{model_config['filename']}")
+    try:
+        queue_handler.update_queue()
+        output = queue_handler.resolve_request(req)
+        if task.lower() == "transcriptions" or task.lower() == "translations":
+            return jsonify(output)
+        else:
 
-    return jsonify(output)
-    # except Exception as e:
-    #     return e
-        # return bad_request(str(e))
-
-
-
+            return send_file("Out.wav", as_attachment=True)
+    except Exception as e:
+        print(e)
+        return bad_request(str(e))
 
 
 if __name__ == '__main__':
     memory_handler = MemoryHandler()
     queue_handler = Handler(memory_handler)
-    app.run(debug=True)
+    app.run()
 
 # serve(app, host='0.0.0.0', port=8080)
 
