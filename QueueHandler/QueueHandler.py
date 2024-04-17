@@ -2,12 +2,11 @@ import threading
 import uuid
 import time
 
-from MemoryHandler.MemoryHandler import MemoryHandler
+from ResponseHandler.InferenceHandler import InferenceHandler
 
 
-# TODO try to fix order of execution and change in mem handler append to substitute element0 si sneak == False
 class Handler:
-    def __init__(self, memory_handler: MemoryHandler, ):
+    def __init__(self, memory_handler: InferenceHandler):
         self.queue = []
         self.memory_handler = memory_handler
         self.lock = threading.Lock()
@@ -24,7 +23,7 @@ class Handler:
             if self.queue.index(request) == 0:
                 with self.lock:
                     output = self.memory_handler.inference(model_config=request["model_config"])
-                    print("Done")
+                    print("Solved request " + str(request["request_uuid"]))
                     return output
             time.sleep(0.5)
 

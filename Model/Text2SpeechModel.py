@@ -26,6 +26,6 @@ class Text2SpeechModel:
         audio_array = self.model.generate(**inputs)
         audio_array = audio_array.cpu().numpy().squeeze()
         sample_rate = self.model.generation_config.sample_rate
-        scipy.io.wavfile.write("AudioOutputs/AudioOutput.wav", rate=sample_rate, data=audio_array)
+        scipy.io.wavfile.write("./media/AudioMedia/AudioOutput.wav", rate=sample_rate, data=audio_array)
 
         return [audio_array, sample_rate]

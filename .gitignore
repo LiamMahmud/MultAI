@@ -13,3 +13,4 @@ myfile2.wav
 /Tests/SmallTalk.mp3
 /media
 /Tests
+*/__pycache__/

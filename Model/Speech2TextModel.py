@@ -13,7 +13,7 @@ class Speech2TextModel:
         self.device = device
 
     def initialize_model(self):
-        self.model = whisper.load_model(self.model_path, device=self.device)
+        self.model = whisper.load_model(self.model_name, device=self.device, download_root="./ModelFiles/audio/Whisper/")
 
     def inference(self, filename: str,
                   task: Literal['transcribe', 'transcript'],
@@ -22,7 +22,7 @@ class Speech2TextModel:
                   temperature=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0,),
                   **kwargs):
 
-        result = self.model.transcribe(f'./media/AudioInputs/{filename}', initial_prompt=initial_prompt,
+        result = self.model.transcribe(f'./media/AudioMedia/{filename}', initial_prompt=initial_prompt,
                                        temperature=temperature, language=language, task=task)
 
         return result
