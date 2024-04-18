@@ -93,21 +93,16 @@ def validate_vision_request():
         if file.filename == '':
             return 400, 'No selected file'
         model_config = request.form.to_dict()
-        print("------------")
-        print(type(model_config["use_4_bit"]))
-        print("------------")
+
         if "model_name" not in model_config:
             return 400, "Model needs to be picked"
         if not allowed_image_file(file.filename):
             print(file.filename)
             return 400, "Not supported filetype"
-        if not os.path.isdir(f'./ModelFiles/Vision/{model_config["model_name"]}'):
+        if not os.path.isdir(f"./ModelFiles/Vision/{model_config['model_name'].replace('_4bit', '')}"):
             return 400, "The model does not exist in the server"
         if file:
-            if "use_4_bit" not in model_config or model_config["use_4_bit"] != "False":
-                model_config["use_4_bit"] = True
-            else:
-                model_config["use_4_bit"] = False
+
             filename = f'InputVisionImage.{file.filename.split(".")[1]}'
             model_config["image_file"] = filename
             if file.filename.startswith("http:/") or file.filename.startswith("https:/"):

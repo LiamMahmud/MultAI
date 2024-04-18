@@ -9,9 +9,8 @@ image_to_upload = 'cats.jpg'
 save_path = 'downloaded_image.jpg'
 
 data = {
-    "model_name": "Llava",
+    "model_name": "Llava_4bit",
     'prompt': "what's on this image?",
-    "use_4_bit": False
 }
 
 

@@ -45,10 +45,10 @@ class MemoryHandler:
                 return [model_size, model_size, False]
 
         if self.model_config["model_type"] == "vision":
-            config_path = f"./ModelFiles/Vision/Llava/Llava.ini"
+            config_path = f"./ModelFiles/Vision/Llava/{self.model_config['model_name'].replace('_4bit', '')}.ini"
             model_size = int(self.read_model_config(config_path, "model_size"))
             model_size_4bit = int(self.read_model_config(config_path, "model_size_4bit"))
-            if "use_4_bit" in self.model_config and self.model_config["use_4_bit"]:
+            if "use_4_bit" in self.model_config["model_name"]:
                 return [model_size, model_size_4bit, False]
             return [model_size, model_size, False]
         raise "Wrong model configuration"
