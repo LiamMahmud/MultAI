@@ -1,7 +1,5 @@
 import os
-import io
 from flask import Flask, request, jsonify, Response, stream_with_context, send_file, after_this_request
-import wave
 from ResponseHandler.InferenceHandler import InferenceHandler
 from QueueHandler.QueueHandler import Handler
 from api_error_handler import internal_server_error, bad_request
@@ -25,7 +23,7 @@ def inference(model):
 @app.route('/chat/completions', methods=['POST'])
 def chat():
     # If the file exists and it is allowed
-
+    print("HELLO")
     code, model_config = validate_chat_request()
     if code != 200:
         return bad_request(str(model_config))
@@ -105,7 +103,7 @@ def vision():
 if __name__ == '__main__':
     memory_handler = InferenceHandler()
     queue_handler = Handler(memory_handler)
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
 
 # serve(app, host='0.0.0.0', port=8080)
 

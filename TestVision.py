@@ -10,7 +10,7 @@ save_path = 'downloaded_image.jpg'
 
 data = {
     "model_name": "Llava_4bit",
-    'prompt': "what's on this image?",
+    'prompt': "What do you see on this image?",
 }
 
 

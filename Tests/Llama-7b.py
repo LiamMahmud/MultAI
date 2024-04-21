@@ -1,10 +1,13 @@
 from llama_cpp import Llama
-
+import torch
+print(torch.cuda.is_available())
 llm = Llama(
     model_path="../ModelFiles/Chat/Llama2-7b/llama-2-7b-chat.Q5_K_M.gguf",  # Download the model file first
     n_ctx=4096,  # The max sequence length to use - note that longer sequence lengths require much more resources
     n_threads=14,  # The number of CPU threads to use, tailor to your system and the resulting performance
     n_gpu_layers=-1) # The number of layers to offload to GPU, if you have GPU acceleration available
+
+
 
 # import objsize
 # print(objsize.get_deep_size(llm))

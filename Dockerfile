@@ -10,26 +10,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     ca-certificates \
     build-essential \
+    dpkg \
+    lsb-release \
+    gnupg \
+    nano \
+    vim \
+    python3 \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Miniconda
-#ENV MINICONDA_VERSION=py39_4.9.2
-#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -O /tmp/miniconda.sh \
-#    && bash /tmp/miniconda.sh -b -p /opt/conda \
-#    && rm /tmp/miniconda.sh
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb \
+    && dpkg -i cuda-keyring_1.1-1_all.deb
+#    && rm cuda-keyring_1.1-1_all.deb
+#
+RUN apt-get update
+#
+RUN apt-get install -y cuda-toolkit-12-4
+RUN apt-get install ffmpeg -y
 
-# Add Conda to PATH
-ENV PATH=/opt/conda/bin:${PATH}
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-# Create a Conda environment
-#RUN conda create -n myenv python=3.8.19
-# Activate the Conda environment
-#SHELL ["conda", "run", "-n", "myenv", "/bin/bash", "-c"]
+RUN pip3 install flask accelerate transformers soundfile requests regex pillow openai-whisper bitsandbytes scipy uuid pynvml psutil
+RUN CMAKE_ARGS="-DLLAMA_CUDA=on" pip3 install llama-cpp-python
 
-COPY ./Tests/Llama-7b.py ./ModelFiles/Llama2-7b/llama-2-7b-chat.Q5_K_M.gguf ./
+EXPOSE 5000
 
-# Install any additional packages
-#RUN conda install numpy pandas scikit-learn matplotlib
+RUN mkdir -p /Api
 
-# Set the default command to Python3
-#CMD ["conda", "run", "-n", "myenv", "python"]
+COPY . /Api/
+
+CMD ["sleep", "infinity"]

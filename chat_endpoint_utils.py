@@ -1,12 +1,8 @@
 import os
-import time
-import uuid
 
 import requests
 from PIL import Image
 from flask import jsonify, request
-from werkzeug.utils import secure_filename
-from api_error_handler import bad_request
 
 UPLOAD_FOLDER = './media'
 
