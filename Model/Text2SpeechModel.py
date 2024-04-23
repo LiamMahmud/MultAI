@@ -5,8 +5,8 @@ import io
 
 class Text2SpeechModel:
     def __init__(self, model_name: str,
-                 voice_preset: str,
                  device: str,
+                 voice_preset: str = None,
                  **kwargs):
         self.model_name = model_name
         self.model = None

@@ -9,14 +9,17 @@ class MemoryHandler:
         self.model_config = model_config
 
     def prepare_memory_configs(self):
-        needed_RAM, needed_VRAM, opt_offload = self.needed_space()
-        self.model_config["device"] = "cuda"
-        if needed_RAM > self.get_available_RAM():
-            raise_memory_error("Not enough RAM, this model cannot be used in this device")
-        if needed_VRAM > self.get_available_VRAM():
-            self.model_config["n_gpu_layers"] = opt_offload
-            self.model_config["device"] = "cpu"
-        return self.model_config
+        try:
+            needed_RAM, needed_VRAM, opt_offload = self.needed_space()
+            self.model_config["device"] = "cuda"
+            if needed_RAM > self.get_available_RAM():
+                raise_memory_error("Not enough RAM, this model cannot be used in this device")
+            if needed_VRAM > self.get_available_VRAM():
+                self.model_config["n_gpu_layers"] = opt_offload
+                self.model_config["device"] = "cpu"
+            return 200, self.model_config
+        except Exception as e:
+            return 400, str(e)
 
     def needed_space(self):
         if self.model_config["model_type"] == "chat":
@@ -51,7 +54,12 @@ class MemoryHandler:
             if "use_4_bit" in self.model_config["model_name"]:
                 return [model_size, model_size_4bit, False]
             return [model_size, model_size, False]
-        raise "Wrong model configuration"
+        if self.model_config["model_type"] == "images":
+            config_path = f"./ModelFiles/Images/{self.model_config['model_name']}/{self.model_config['model_name']}.ini"
+            model_size = int(self.read_model_config(config_path, "model_size"))
+            return [model_size, model_size, False]
+
+        raise ValueError("Wrong model configuration")
 
     def optimal_offload(self, model_size, number_layers):
         output = self.get_available_VRAM() * number_layers / model_size

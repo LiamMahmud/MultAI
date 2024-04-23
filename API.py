@@ -3,7 +3,8 @@ from flask import Flask, request, jsonify, Response, stream_with_context, send_f
 from ResponseHandler.InferenceHandler import InferenceHandler
 from QueueHandler.QueueHandler import Handler
 from api_error_handler import internal_server_error, bad_request
-from chat_endpoint_utils import stream_output, validate_audio_request, validate_chat_request, validate_vision_request
+from chat_endpoint_utils import stream_output, validate_audio_request, validate_chat_request, validate_vision_request, \
+    validate_image_request, remove_files
 
 app = Flask(__name__)
 
@@ -100,6 +101,27 @@ def vision():
     #     return bad_request(str(e))
 
 
+@app.route('/images/generations', methods=['POST'])
+def images():
+    @after_this_request
+    def remove_file(response):
+        try:
+            queue_handler.remove_request(req)
+        finally:
+            return response
+
+    code, model_config = validate_image_request()
+    if code != 200:
+        return bad_request(str(model_config))
+    req = queue_handler.add_request(model_config)
+    queue_handler.update_queue()
+    code, output = queue_handler.resolve_request(req)
+    if code != 200:
+        return bad_request(str(output))
+
+    return send_file("./media/ImagesMedia/outputImage0.jpg", as_attachment=True)
+
+
 if __name__ == '__main__':
     memory_handler = InferenceHandler()
     queue_handler = Handler(memory_handler)
@@ -109,8 +131,8 @@ if __name__ == '__main__':
 
 # TODO do validation of input config,
 # Auto voice preset for Text2Speech
-# try and fix load model not using chec of same model in vision
-
+# revise vision inference handler
+# in images return multiple files and images handler
 
 
 # @app.route('/image', methods=['POST'])

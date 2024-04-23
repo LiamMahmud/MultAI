@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import requests
 from PIL import Image
@@ -75,9 +76,10 @@ def validate_chat_request():
         return 400, "model_name and prompt are necessary keys"
     if not os.path.isdir(f'./ModelFiles/Chat/{model_config["model_name"]}'):
         return 400, "The model does not exist in the server"
-
+    if "priority" not in model_config:
+        model_config["priority"] = 1
     model_config["model_type"] = "chat"
-    model_config["priority"] = 1
+
     return 200, model_config
 
 
@@ -114,3 +116,30 @@ def validate_vision_request():
     except Exception as e:
         print(e)
         return 400, "Invalid request"
+
+
+def validate_image_request():
+    try:
+        model_config = request.get_json()
+        if "model_name" not in model_config or "prompt" not in model_config:
+            return 400, "model_name and prompt are necessary keys"
+        if not os.path.isdir(f'./ModelFiles/Images/{model_config["model_name"]}'):
+            return 400, "The model does not exist in the server"
+
+        model_config["model_type"] = "images"
+        if "priority" not in model_config:
+            model_config["priority"] = 1
+        return 200, model_config
+
+    except Exception as e:
+        return 400, e
+
+
+def remove_files(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))

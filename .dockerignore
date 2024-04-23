@@ -1,5 +1,2 @@
 ./Tests/
-./ModelFiles/Chat/Mistral-8x7b-Q4_K_M
-./ModelFiles/Chat/Mistral-8x7b-Q5_K_M
-./ModelFiles/Chat/Mistral-7b
-./ModelFiles/Audio/Bark
+

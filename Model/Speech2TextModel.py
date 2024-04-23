@@ -9,11 +9,11 @@ class Speech2TextModel:
                  **kwargs):
         self.model_name = model_name
         self.model = None
-        self.model_path = f'./ModelFiles/Audio/Whisper/{model_name}.pt'
+        # self.model_path = f'./ModelFiles/Audio/Whisper/{model_name}.pt'
         self.device = device
 
     def initialize_model(self):
-        self.model = whisper.load_model(self.model_name, device=self.device, download_root="./ModelFiles/audio/Whisper/")
+        self.model = whisper.load_model(self.model_name, device=self.device, download_root="./ModelFiles/Audio/Whisper/")
 
     def inference(self, filename: str,
                   task: Literal['transcribe', 'transcript'],
