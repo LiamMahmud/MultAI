@@ -19,11 +19,12 @@ i = {"model_name": "Llama2-7b", "n_gpu_layers": -1, "n_threads": 14,
      "repeat_penalty": 1.1, "stop": None
      }
 
-url = 'http://localhost:5000/chat/completions'
+url = 'http://127.0.0.1:5000/chat/completions'
 
 start_time = time.time()
 response = requests.post(url, json=i)
 print(response.json())
-print("Time:", time.time() - start_time)
+# print(response.json())
+# print("Time:", time.time() - start_time)
 
 

@@ -22,6 +22,7 @@ class Handler:
         while True:
             if self.queue.index(request) == 0:
                 with self.lock:
+                    print("Solving request with config: ", request["model_config"])
                     output = self.memory_handler.inference(model_config=request["model_config"])
                     print("Solved request " + str(request["request_uuid"]))
                     return output

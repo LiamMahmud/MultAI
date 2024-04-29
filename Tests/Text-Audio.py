@@ -29,13 +29,24 @@ voice_preset = "v2/en_speaker_2"
 
 inputs = processor("Hello, my dog is cute", voice_preset=voice_preset).to("cuda")
 
-audio_array = model.generate(**inputs)
-audio_array = audio_array.cpu().numpy().squeeze()
-
-import scipy
-
-sample_rate = model.generation_config.sample_rate
-scipy.io.wavfile.write("bark_out.wav", rate=sample_rate, data=audio_array)
+# audio_array = model.generate(**inputs)
+# audio_array = audio_array.cpu().numpy().squeeze()
+#
+# import scipy
+#
+# sample_rate = model.generation_config.sample_rate
+# scipy.io.wavfile.write("bark_out.wav", rate=sample_rate, data=audio_array)
 
 print("Audio saved successfully.")
 # Audio(output["audio"], rate=output["sampling_rate"])
+import inspect
+
+def get_default_args(func):
+    signature = inspect.signature(func)
+    return {
+        k: v.default
+        for k, v in signature.parameters.items()
+        if v.default is not inspect.Parameter.empty
+    }
+
+print(get_default_args(processor))

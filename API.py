@@ -1,10 +1,13 @@
 import os
-from flask import Flask, request, jsonify, Response, stream_with_context, send_file, after_this_request
-from ResponseHandler.InferenceHandler import InferenceHandler
+
+import zipstream
+from flask import Flask, jsonify, Response, stream_with_context, send_file, after_this_request
+
+from API_utils import stream_output, validate_audio_request, validate_chat_request, validate_vision_request, \
+    validate_image_request
 from QueueHandler.QueueHandler import Handler
-from api_error_handler import internal_server_error, bad_request
-from chat_endpoint_utils import stream_output, validate_audio_request, validate_chat_request, validate_vision_request, \
-    validate_image_request, remove_files
+from ResponseHandler.InferenceHandler import InferenceHandler
+from api_error_handler import bad_request
 
 app = Flask(__name__)
 
@@ -14,17 +17,15 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 
-def inference(model):
-    return (f"this is {model} inference")
-
-
-# TODO Intentar pasar stream_output a chat_utils (quizás haciendo que tanto api como utils dependan de queue)
-
-
 @app.route('/chat/completions', methods=['POST'])
 def chat():
+    @after_this_request
+    def remove_file(response):
+        try:
+            queue_handler.remove_request(req)
+        finally:
+            return response
     # If the file exists and it is allowed
-    print("HELLO")
     code, model_config = validate_chat_request()
     if code != 200:
         return bad_request(str(model_config))
@@ -36,12 +37,10 @@ def chat():
     code, output = queue_handler.resolve_request(req)
     if code != 200:
         return bad_request(str(output))
-    # print(output)
-    print(output)
+
     if "stream" in model_config and model_config["stream"] == True:
         return Response(stream_with_context(stream_output(queue_handler, output, req)), mimetype='text/plain')
 
-    # return jsonify({'message': 'File uploaded successfully', 'string': output['choices'][0]['message']})
     output["choices"][0]["message"]["content"] = output["choices"][0]["message"]["content"].strip()
     queue_handler.remove_request(req)
 
@@ -87,18 +86,13 @@ def vision():
     if code != 200:
         return bad_request(str(model_config))
 
-    print(model_config)
     req = queue_handler.add_request(model_config)
-    print(req)
-    # try:
     queue_handler.update_queue()
     code, output = queue_handler.resolve_request(req)
     if code != 200:
         return bad_request(str(output))
     return jsonify(output)
-    # except Exception as e:
-    #     print(e)
-    #     return bad_request(str(e))
+
 
 
 @app.route('/images/generations', methods=['POST'])
@@ -118,9 +112,16 @@ def images():
     code, output = queue_handler.resolve_request(req)
     if code != 200:
         return bad_request(str(output))
+    if model_config["n"] == 1:
+        return send_file("./media/ImagesMedia/outputImage0.jpg", as_attachment=True)
+    else:
+        zipFile = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
+        for e in range(model_config["n"]):
+            zipFile.write(f'./media/ImagesMedia/outputImage{e}.jpg', arcname=f'outputImage{e}.jpg')
 
-    return send_file("./media/ImagesMedia/outputImage0.jpg", as_attachment=True)
-
+        response = Response(zipFile, mimetype='application/zip')
+        response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
+        return response
 
 if __name__ == '__main__':
     memory_handler = InferenceHandler()
@@ -130,9 +131,6 @@ if __name__ == '__main__':
 # serve(app, host='0.0.0.0', port=8080)
 
 # TODO do validation of input config,
-# Auto voice preset for Text2Speech
-# revise vision inference handler
-# in images return multiple files and images handler
 
 
 # @app.route('/image', methods=['POST'])

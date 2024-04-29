@@ -9,9 +9,8 @@ url = "http://127.0.0.1:5000/audio/speech"
 string_data = "Diez Hordenes, Dalinar, Roshar"
 
 data = {
-    'prompt': "Hola, mi nombre es Lucia, ¿como te llamas?",
-    "model_name": "Bark-small",
-    "voice_preset": "v2/es_speaker_4"
+    'prompt': "Hola, mi nombre es Lucia, ¿como te llamas tu?",
+    "model_name": "Bark",
 }
 
 response = requests.post(url, data=data)

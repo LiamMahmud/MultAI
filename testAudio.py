@@ -17,7 +17,7 @@ data = {
     "model_name": "medium"
 }
 
-response = requests.post(url2, files=files, data=data)
+response = requests.post(url, files=files, data=data)
 # response2 = requests.post(url2, files=files, data=data)
 print(response.json()["text"])
 # print(response.json())

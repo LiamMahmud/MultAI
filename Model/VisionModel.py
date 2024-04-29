@@ -1,7 +1,5 @@
 import os
-from configparser import ConfigParser
 
-import requests
 import torch
 from PIL import Image
 from transformers import AutoProcessor, LlavaForConditionalGeneration
@@ -21,7 +19,6 @@ class VisionModel:
         self.use_4_bit = "_4bit" in self.model_name
 
     def initialize_model(self):
-        print("_4bit" in self.model_name)
         if self.device == "cuda" and self.use_4_bit:
             self.model = LlavaForConditionalGeneration.from_pretrained(
                 self.model_path,
@@ -48,8 +45,6 @@ class VisionModel:
         raw_image = Image.open(f"./media/VisionMedia/{image_file}")
         inputs = self.processor(template, raw_image, return_tensors='pt').to(self.device, torch.float16)
         output = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
-        # return self.processor.decode(output, skip_special_tokens=True)
-        print(output)
         return self.processor.decode(output[0][0:], skip_special_tokens=True)
 
     def get_model_path(self):

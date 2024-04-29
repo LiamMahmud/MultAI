@@ -3,8 +3,7 @@ from typing import Literal
 
 
 class Speech2TextModel:
-    def __init__(self, filename: str,
-                 model_name: str,
+    def __init__(self, model_name: str,
                  device: str,
                  **kwargs):
         self.model_name = model_name
@@ -17,12 +16,11 @@ class Speech2TextModel:
 
     def inference(self, filename: str,
                   task: Literal['transcribe', 'transcript'],
-                  language=None,
-                  initial_prompt=None,
-                  temperature=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0,),
+                  language: str = None,
+                  initial_prompt: str = None,
                   **kwargs):
 
         result = self.model.transcribe(f'./media/AudioMedia/{filename}', initial_prompt=initial_prompt,
-                                       temperature=temperature, language=language, task=task)
+                                       language=language, task=task)
 
         return result

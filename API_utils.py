@@ -1,9 +1,9 @@
+import json
 import os
-import shutil
 
 import requests
 from PIL import Image
-from flask import jsonify, request
+from flask import request
 
 UPLOAD_FOLDER = './media'
 
@@ -12,11 +12,12 @@ def stream_output(queue_handler, generator, req):
     try:
         for token in generator:
             if "content" in token['choices'][0]['delta']:
-                content = token['choices'][0]['delta']["content"]
+                content = token['choices'][0]['delta']['content']
                 yield content
-        queue_handler.remove_request(req)
-    except GeneratorExit:
-        print("Upsss!")
+        # queue_handler.remove_request(req)
+    except Exception:
+        # queue_handler.remove_request(req)
+        pass
 
 
 def allowed_audio_file(filename):
@@ -27,6 +28,13 @@ def allowed_audio_file(filename):
 def allowed_image_file(filename):
     ALLOWED_EXTENSIONS = ["jpg", "png", "jpeg"]
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def convert_to_integer(model_config, values, val_type):
+    for e in values:
+        if e in model_config:
+            model_config[e] = int(model_config[e]) if val_type == "int" else float(model_config[e])
+    return model_config
 
 
 def validate_audio_request(task):
@@ -78,6 +86,8 @@ def validate_chat_request():
         return 400, "The model does not exist in the server"
     if "priority" not in model_config:
         model_config["priority"] = 1
+    model_config = convert_to_integer(model_config, ["n_gpu_layers", "n_threads", "temperature", "max_tokens", "top_k"], "int")
+    model_config = convert_to_integer(model_config, ["top_p", "presence_penalty", "frequency_penalty", "repeat_penalty"], "float")
     model_config["model_type"] = "chat"
 
     return 200, model_config
@@ -112,6 +122,8 @@ def validate_vision_request():
             model_config["model_type"] = "vision"
             if "priority" not in model_config:
                 model_config["priority"] = 1
+            if "max_tokens" in model_config:
+                model_config["max_tokens"] = int(model_config["max_tokens"])
             return 200, model_config
     except Exception as e:
         print(e)
@@ -129,6 +141,11 @@ def validate_image_request():
         model_config["model_type"] = "images"
         if "priority" not in model_config:
             model_config["priority"] = 1
+        if "n" not in model_config:
+            model_config["n"] = 1
+
+        if model_config["n"] > 5 or model_config["n"] == 0:
+            return 400, "Number of generated images must be between 1 and 5"
         return 200, model_config
 
     except Exception as e:

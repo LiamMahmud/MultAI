@@ -1,6 +1,5 @@
-from transformers import AutoProcessor, BarkModel
 import scipy
-import io
+from transformers import AutoProcessor, BarkModel
 
 
 class Text2SpeechModel:

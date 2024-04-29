@@ -1,6 +1,5 @@
 import requests
 import torch
-torch.cuda.empty_cache()
 
 url = "http://127.0.0.1:5000/audio/translations"
 url2 = "http://127.0.0.1:5000/audio/transcriptions"

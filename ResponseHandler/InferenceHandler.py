@@ -28,9 +28,6 @@ class InferenceHandler:
             # self.current_model_name = model_config["model_name"]
 
         if model_config["model_type"] == "vision" and model_config["model_name"] != self.current_model_name:
-            if self.model is not None and self.model.use_4_bit != model_config["use_4_bit"]:
-                self.model = None
-                torch.cuda.empty_cache()
             self.model = VisionModel(**model_config)
             # self.model.initialize_model()
             # self.current_model_name = model_config["model_name"]
@@ -51,6 +48,7 @@ class InferenceHandler:
             self.load_model(model_config)
 
             output = self.model.inference(**model_config)
+
             return 200, output
         except Exception as e:
             return 400, str(e)

@@ -30,7 +30,7 @@ RUN apt-get install ffmpeg -y
 
 RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-RUN pip3 install flask accelerate transformers soundfile requests regex pillow openai-whisper bitsandbytes scipy uuid pynvml psutil
+RUN pip3 install flask accelerate transformers soundfile requests regex pillow openai-whisper bitsandbytes scipy uuid pynvml psutil zipstream-new diffusers
 RUN CMAKE_ARGS="-DLLAMA_CUDA=on" pip3 install llama-cpp-python
 
 EXPOSE 5000

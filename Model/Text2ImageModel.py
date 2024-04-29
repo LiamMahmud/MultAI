@@ -1,5 +1,5 @@
-from diffusers import DiffusionPipeline
 import torch
+from diffusers import AutoPipelineForText2Image
 
 
 class Text2ImageModel:
@@ -12,15 +12,14 @@ class Text2ImageModel:
         self.device = device
 
     def initialize_model(self):
-        self.model = DiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-xl-base-1.0",
-                                                       torch_dtype=torch.float16,
-                                                       use_safetensors=True, variant="fp16")
+        self.model = AutoPipelineForText2Image.from_pretrained(self.model_path, torch_dtype=torch.float16, variant="fp16")
         self.model.to(self.device)
 
     def inference(self, prompt: str,
-                  n: int = 1,
+                  n: int,
+                  number_steps: int = 4,
                   **kwargs):
         for e in range(n):
-            image = self.model(prompt=prompt).images[0]
+            image = self.model(prompt=prompt, num_inference_steps=number_steps, guidance_scale=0.0).images[0]
             image.save(f"./media/ImagesMedia/outputImage{e}.jpg")
         return True

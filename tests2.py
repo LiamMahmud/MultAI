@@ -12,7 +12,7 @@ prompt = [
     {"role": "user", "content": "Do you remember what number you said before?"}
 ]
 
-url = 'http://localhost:8080/chat/completions'
+url = 'http://127.0.0.1:5000/chat/completions'
 # def throw_request(priority):
 #     i = {"model_name": "Llama2-7b", "n_gpu_layers": -1, "n_threads": 14, "main_gpu": 0,
 #          "prompt": prompt, "temperature": 0.1, "max_tokens": 512, "top_p": 0.95,
@@ -53,7 +53,7 @@ url = 'http://localhost:8080/chat/completions'
 
 i = {"model_name": "Llama2-7b", "n_gpu_layers": -1, "n_threads": 14, "main_gpu": 0,
          "prompt": prompt, "temperature": 0.1, "max_tokens": 512, "top_p": 0.95,
-         "top_k": 40, "stream": False, "presence_penalty": 0.0, "frequency_penalty": 0.0,
+         "top_k": 40, "stream": True, "presence_penalty": 0.0, "frequency_penalty": 0.0,
          "repeat_penalty": 1.1, "stop": None, "priority": 1
          }
 # with requests.post(url, json=i, stream=True) as r:
@@ -62,12 +62,15 @@ i = {"model_name": "Llama2-7b", "n_gpu_layers": -1, "n_threads": 14, "main_gpu":
 #         time.sleep(0.05)
 
 
-# x = requests.post(url, json=i, stream=True)
-# for e in x:
-#     print(e.decode("utf-8"), end="")
-#     time.sleep(0.5)
 x = requests.post(url, json=i, stream=True)
-print(x.json())
+print(x)
+for e in x:
+    if e:
+        print(e.decode("utf-8"), end="")
+        # print(type(json.loads(e.decode("utf-8"))))
+        time.sleep(0.5)
+# x = requests.post(url, json=i, stream=True)
+# print(x.json())
 
 # files = {'image': open(file_path, 'rb')}
 # headers = {'Content-Type': 'application/json'}  # Set the content type to JSON
