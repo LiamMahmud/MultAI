@@ -9,7 +9,7 @@ import streamlit as st
 
 ICON = "./BotFaceSinFondo.png"
 InfoIcon = "./InfoIcon.png"
-url = 'http://localhost:5000/chat'
+url = 'http://127.0.0.1:5000/chat/completions'
 
 model_config = {"model_name": "Mistral-7b", "n_gpu_layers": -1, "n_threads": 14, "main_gpu": 0,
       "temperature": 0.1, "max_tokens": 512, "top_p": 0.95,
@@ -165,8 +165,8 @@ st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 def generate_response(prompt):
     response = requests.post(url, json=model_config)
-    print(response.json())
-    return response.json()["string"]["content"]
+    print(response.json()["choices"][0]["message"])
+    return response.json()["choices"][0]["message"]["content"]
 
 # User-provided prompt
 if prompt := st.chat_input(disabled=not True):

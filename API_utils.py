@@ -1,5 +1,7 @@
+import base64
 import json
 import os
+from io import BytesIO
 
 import requests
 from PIL import Image
@@ -86,8 +88,10 @@ def validate_chat_request():
         return 400, "The model does not exist in the server"
     if "priority" not in model_config:
         model_config["priority"] = 1
-    model_config = convert_to_integer(model_config, ["n_gpu_layers", "n_threads", "temperature", "max_tokens", "top_k"], "int")
-    model_config = convert_to_integer(model_config, ["top_p", "presence_penalty", "frequency_penalty", "repeat_penalty"], "float")
+    model_config = convert_to_integer(model_config, ["n_gpu_layers", "n_threads", "temperature", "max_tokens", "top_k"],
+                                      "int")
+    model_config = convert_to_integer(model_config,
+                                      ["top_p", "presence_penalty", "frequency_penalty", "repeat_penalty"], "float")
     model_config["model_type"] = "chat"
 
     return 200, model_config
@@ -95,36 +99,36 @@ def validate_chat_request():
 
 def validate_vision_request():
     try:
-        if 'file' not in request.files:
-            return 400, 'No file part'
-        file = request.files['file']
-        if file.filename == '':
-            return 400, 'No selected file'
-        model_config = request.form.to_dict()
+        model_config = request.get_json()
 
         if "model_name" not in model_config:
             return 400, "Model needs to be picked"
-        if not allowed_image_file(file.filename):
-            print(file.filename)
-            return 400, "Not supported filetype"
+        if "prompt" not in model_config:
+            return 400, "No prompt sent"
+
         if not os.path.isdir(f"./ModelFiles/Vision/{model_config['model_name'].replace('_4bit', '')}"):
             return 400, "The model does not exist in the server"
-        if file:
+        if "image" in model_config:
+            # if not allowed_image_file(file.filename):
+            #     return 400, "Not supported filetype"
 
-            filename = f'InputVisionImage.{file.filename.split(".")[1]}'
+            filename = f'InputVisionImage.{model_config["mime_type"]}'
             model_config["image_file"] = filename
-            if file.filename.startswith("http:/") or file.filename.startswith("https:/"):
-                image = Image.open(requests.get(file.filename, stream=True).raw)
+            if model_config["image"].startswith("http:/") or model_config["image"].startswith("https:/"):
+                image = Image.open(requests.get(model_config["image"], stream=True).raw)
                 image.save(os.path.join(UPLOAD_FOLDER + "/VisionMedia", filename))
             else:
-                file.save(os.path.join(UPLOAD_FOLDER + "/VisionMedia", filename))
+                image = Image.open(BytesIO(base64.b64decode(model_config["image"])))
+                image.save(os.path.join(UPLOAD_FOLDER + "/VisionMedia", filename))
 
-            model_config["model_type"] = "vision"
-            if "priority" not in model_config:
-                model_config["priority"] = 1
-            if "max_tokens" in model_config:
-                model_config["max_tokens"] = int(model_config["max_tokens"])
-            return 200, model_config
+        model_config["model_type"] = "vision"
+        if "priority" not in model_config:
+            model_config["priority"] = 1
+        if "max_tokens" in model_config:
+            model_config["max_tokens"] = int(model_config["max_tokens"])
+        model_config.pop("image", None)
+        return 200, model_config
+
     except Exception as e:
         print(e)
         return 400, "Invalid request"

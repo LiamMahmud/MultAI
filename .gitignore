@@ -6,7 +6,7 @@ Tests/phi-2.Q8_0.gguf
 Tests/model.pth
 /ModelFiles
 .idea/misc.xml
-myfile2.wav
+Tests/myfile2.wav
 ./*.wav
 /Tests/ECDLR.m4a
 /Tests/ECDLR.mp3
@@ -14,3 +14,5 @@ myfile2.wav
 /media
 /Tests
 */__pycache__/
+./Test*
+./test*

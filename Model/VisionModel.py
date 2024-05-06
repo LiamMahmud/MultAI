@@ -37,16 +37,33 @@ class VisionModel:
         self.processor = AutoProcessor.from_pretrained(self.model_path)
 
     def inference(self,
-                  prompt: str,
+                  prompt: dict,
                   image_file: str,
                   max_tokens: int = 350,
                   **kwargs):
-        template = f"USER: <image>\n{prompt}\nASSISTANT:"
-        raw_image = Image.open(f"./media/VisionMedia/{image_file}")
-        inputs = self.processor(template, raw_image, return_tensors='pt').to(self.device, torch.float16)
-        output = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
-        return self.processor.decode(output[0][0:], skip_special_tokens=True)
 
+        messages = self.normalize_to_template(prompt)
+        print(messages)
+        raw_image = Image.open(f"./media/VisionMedia/{image_file}")
+        inputs = self.processor(messages, raw_image, return_tensors='pt').to(self.device, torch.float16)
+        output = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
+        decode = self.processor.decode(output[0][0:], skip_special_tokens=True)
+        return {"role": "assistant", "content": decode.split(" ASSISTANT: ")[-1]}
+
+    def normalize_to_template(self, prompts):
+        output = ""
+
+        for index, message in enumerate(prompts):
+            print("here")
+            if index == 0:
+                output += f"USER: <image>\n{message['content']} "
+            else:
+                if message["role"].upper() == "USER":
+                    output += f"USER: {message['content']} "
+                if message["role"].upper() == "ASSISTANT":
+                    output += f"ASSISTANT: {message['content']}</s>"
+        output += "ASSISTANT:"
+        return output
     def get_model_path(self):
         if not os.path.exists(self.model_folder_path):
             raise FileExistsError('There is no Model Folder for this defined model in ModelFiles.')
