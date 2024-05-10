@@ -1,8 +1,7 @@
 import base64
-import json
 import os
 from io import BytesIO
-
+import urllib.request
 import requests
 from PIL import Image
 from flask import request
@@ -16,9 +15,7 @@ def stream_output(queue_handler, generator, req):
             if "content" in token['choices'][0]['delta']:
                 content = token['choices'][0]['delta']['content']
                 yield content
-        # queue_handler.remove_request(req)
     except Exception:
-        # queue_handler.remove_request(req)
         pass
 
 
@@ -63,6 +60,7 @@ def validate_audio_request(task):
                 model_config["model_type"] = "audio"
                 if "priority" not in model_config:
                     model_config["priority"] = 1
+                model_config["priority"] = int(model_config["priority"])
                 return 200, model_config
         if task.lower() == "speech":
             model_config = request.form.to_dict()
@@ -72,8 +70,11 @@ def validate_audio_request(task):
                 return 400, "The model does not exist in the server"
 
             model_config["model_type"] = "audio"
-            model_config["priority"] = 1
             model_config["task"] = "speech"
+            if "priority" not in model_config:
+                model_config["priority"] = 1
+            model_config["priority"] = int(model_config["priority"])
+
             return 200, model_config
     except Exception as e:
         return 400, e
@@ -82,8 +83,10 @@ def validate_audio_request(task):
 
 def validate_chat_request():
     model_config = request.get_json()
-    if "model_name" not in model_config or "prompt" not in model_config:
-        return 400, "model_name and prompt are necessary keys"
+    if "model_name" not in model_config:
+        return 400, "Model needs to be picked"
+    if "messages" not in model_config:
+        return 400, "No messages sent"
     if not os.path.isdir(f'./ModelFiles/Chat/{model_config["model_name"]}'):
         return 400, "The model does not exist in the server"
     if "priority" not in model_config:
@@ -103,20 +106,18 @@ def validate_vision_request():
 
         if "model_name" not in model_config:
             return 400, "Model needs to be picked"
-        if "prompt" not in model_config:
-            return 400, "No prompt sent"
+        if "messages" not in model_config:
+            return 400, "No messages sent"
 
         if not os.path.isdir(f"./ModelFiles/Vision/{model_config['model_name'].replace('_4bit', '')}"):
             return 400, "The model does not exist in the server"
         if "image" in model_config:
-            # if not allowed_image_file(file.filename):
-            #     return 400, "Not supported filetype"
 
             filename = f'InputVisionImage.{model_config["mime_type"]}'
             model_config["image_file"] = filename
-            if model_config["image"].startswith("http:/") or model_config["image"].startswith("https:/"):
-                image = Image.open(requests.get(model_config["image"], stream=True).raw)
-                image.save(os.path.join(UPLOAD_FOLDER + "/VisionMedia", filename))
+            if type(model_config["image"]) == str and (model_config["image"].startswith("http:/") or model_config["image"].startswith("https:/")):
+                urllib.request.urlretrieve(model_config["image"], os.path.join(UPLOAD_FOLDER + "/VisionMedia", filename))
+
             else:
                 image = Image.open(BytesIO(base64.b64decode(model_config["image"])))
                 image.save(os.path.join(UPLOAD_FOLDER + "/VisionMedia", filename))

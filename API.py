@@ -123,43 +123,26 @@ def images():
         response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
         return response
 
+@app.route('/list/models', methods=['GET'])
+def list_models():
+    origin_folder = './ModelFiles'
+    models = {}
+    # List directories at the first level
+    for first_level in os.listdir(origin_folder):
+        first_level_path = os.path.join(origin_folder, first_level)
+        if os.path.isdir(first_level_path):  # Ensure it's a directory
+            models.setdefault(first_level, [])
+
+            # List directories at the second level
+            for second_level in os.listdir(first_level_path):
+                second_level_path = os.path.join(first_level_path, second_level)
+                if os.path.isdir(second_level_path):  # Ensure it's a directory
+                    models[first_level].append(second_level)
+    return models
+
 if __name__ == '__main__':
     memory_handler = InferenceHandler()
     queue_handler = Handler(memory_handler)
     app.run(host='0.0.0.0', port=5000)
 
 # serve(app, host='0.0.0.0', port=8080)
-
-# TODO do validation of input config,
-
-
-# @app.route('/image', methods=['POST'])
-# def upload():
-#     # Check if the POST request has the file part
-#     if 'image' not in request.files:
-#         return jsonify({'error': 'No file part'})
-#
-#     file = request.files['image']
-#
-#     # If the user does not select a file, the browser submits an empty file without a filename
-#     if file.filename == '':
-#         return jsonify({'error': 'No selected file'})
-#
-#     # If the file exists and it is allowed
-#     if file and allowed_file(file.filename):
-#         filename = secure_filename(file.filename)
-#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#
-#         # Get the string data from the POST request
-#         string_data = request.form.get('text')
-#
-#         # Return a JSON response
-#         return jsonify({'message': 'File uploaded successfully', 'filename': filename, 'string': string_data})
-#
-#     return jsonify({'error': 'Invalid file'})
-
-
-# Function to check if the file extension is allowed
-
-
-# app.run(debug=True)

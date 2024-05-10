@@ -29,20 +29,21 @@ class Handler:
             time.sleep(0.5)
 
     def update_queue(self):
-        reorder = []
-        hold = [[], []]
-        last = []
+        reordered_queue = []
+        priority_1_requests = [[], []]
+        priority_2_requests = []
         for e in self.queue:
             if e["priority"] == 0:
-                reorder.append(e)
+                reordered_queue.append(e)
             if e["priority"] == 1:
                 if e["model_config"]["model_name"] == self.memory_handler.current_model_name:
-                    hold[0].append(e)
+                    priority_1_requests[0].append(e)
                 else:
-                    hold[1].append(e)
+                    priority_1_requests[1].append(e)
             if e["priority"] == 2:
-                last.append(e)
-        reorder.extend(hold[0])
-        reorder.extend(hold[1])
-        reorder.extend(last)
-        self.queue = reorder
+                priority_2_requests.append(e)
+        reordered_queue.extend(priority_1_requests[0])
+        reordered_queue.extend(priority_1_requests[1])
+        reordered_queue.extend(priority_2_requests)
+
+        self.queue = reordered_queue

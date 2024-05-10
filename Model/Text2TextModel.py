@@ -37,7 +37,7 @@ class Text2TextModel:
         )
 
     def inference(self,
-                  prompt: ChatCompletionRequestMessage,
+                  messages: ChatCompletionRequestMessage,
                   temperature: int = 0.2,
                   max_tokens: int = 512,
                   top_p: float = 0.95,
@@ -49,10 +49,10 @@ class Text2TextModel:
                   stop: Optional[Union[str, List[str]]] = None,
                   **kwargs):
 
-        self.validate_prompt(prompt)
+        self.validate_prompt(messages)
         print("")
         # noinspection PyTypeChecker
-        output = self.model.create_chat_completion(messages=prompt,
+        output = self.model.create_chat_completion(messages=messages,
                                                    model=self.model_name,
                                                    temperature=temperature,
                                                    max_tokens=max_tokens,
@@ -67,9 +67,9 @@ class Text2TextModel:
         return output
 
     @staticmethod
-    def validate_prompt(prompt):
+    def validate_prompt(messages):
         valid_roles = {"system", "user", "assistant"}
-        for message in prompt:
+        for message in messages:
             if "role" not in message or "content" not in message:
                 raise ValueError('Invalid format, json must contain "role" and "content" keys.')
 

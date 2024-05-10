@@ -17,3 +17,4 @@ Tests/myfile2.wav
 ./Test*
 ./test*
 /__pycache__
+/__pycache__

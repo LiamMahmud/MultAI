@@ -2,7 +2,7 @@ import requests
 from streamlit_mic_recorder import mic_recorder
 import streamlit as st
 
-url = "http://127.0.0.1:5000/audio/translations"
+url = "http://127.0.0.1:5000/audio/transcriptions"
 
 def callback():
     if st.session_state.AUDIO_output:
@@ -12,7 +12,7 @@ def callback():
             st.audio(audio_bytes)
         files = {"file": open("myfile2.wav", mode="rb")}
         data = {
-            "model_name": "medium"
+            "model_name": "large"
         }
         with st.spinner('Loading...'):
             response = requests.post(url, files=files, data=data)

@@ -37,33 +37,53 @@ class VisionModel:
         self.processor = AutoProcessor.from_pretrained(self.model_path)
 
     def inference(self,
-                  prompt: dict,
-                  image_file: str,
+                  messages: dict,
+                  image_file: str = None,
                   max_tokens: int = 350,
                   **kwargs):
+        self.validate_prompt(messages)
+        messages = self.normalize_to_template(messages)
+        if image_file is not None:
+            raw_image = Image.open(f"./media/VisionMedia/{image_file}")
+            inputs = self.processor(messages, raw_image, return_tensors='pt').to(self.device, torch.float16)
+            output = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
+            decode = self.processor.decode(output[0][0:], skip_special_tokens=True)
+        else:
+            inputs = self.processor(messages, torch.zeros(1, 3, 224, 224), return_tensors='pt').to(self.device, torch.float16)
+            output = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
+            decode = self.processor.decode(output[0][0:], skip_special_tokens=True)
 
-        messages = self.normalize_to_template(prompt)
-        print(messages)
-        raw_image = Image.open(f"./media/VisionMedia/{image_file}")
-        inputs = self.processor(messages, raw_image, return_tensors='pt').to(self.device, torch.float16)
-        output = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
-        decode = self.processor.decode(output[0][0:], skip_special_tokens=True)
         return {"role": "assistant", "content": decode.split(" ASSISTANT: ")[-1]}
 
-    def normalize_to_template(self, prompts):
-        output = ""
+    @staticmethod
+    def validate_prompt(messages):
+        valid_roles = {"user", "assistant"}
+        for message in messages:
+            if "role" not in message or "content" not in message:
+                raise ValueError('Invalid format, json must contain "role" and "content" keys.')
 
-        for index, message in enumerate(prompts):
-            print("here")
-            if index == 0:
-                output += f"USER: <image>\n{message['content']} "
-            else:
-                if message["role"].upper() == "USER":
-                    output += f"USER: {message['content']} "
-                if message["role"].upper() == "ASSISTANT":
-                    output += f"ASSISTANT: {message['content']}</s>"
-        output += "ASSISTANT:"
-        return output
+            if message["role"] not in valid_roles:
+                raise ValueError(f'Invalid role: {message["role"]}. Valid roles are: {valid_roles}')
+
+            if not isinstance(message["content"], str):
+                raise ValueError(f'Invalid content type: content must be a string, got {type(message["content"])}.')
+
+    @staticmethod
+    def normalize_to_template(messages):
+        output = ""
+        try:
+            for index, message in enumerate(messages):
+                if index == 0:
+                    output += f"USER: <image>\n{message['content']} "
+                else:
+                    if message["role"].upper() == "USER":
+                        output += f"USER: {message['content']} "
+                    if message["role"].upper() == "ASSISTANT":
+                        output += f"ASSISTANT: {message['content']}</s>"
+            output += "ASSISTANT:"
+            return output
+        except:
+            raise ValueError("Message not formatted properly, must be json with content and role")
     def get_model_path(self):
         if not os.path.exists(self.model_folder_path):
             raise FileExistsError('There is no Model Folder for this defined model in ModelFiles.')

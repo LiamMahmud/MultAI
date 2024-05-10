@@ -16,24 +16,22 @@ class InferenceHandler:
     def load_model(self, model_config):
         if model_config["model_type"] == "chat" and model_config["model_name"] != self.current_model_name:
             self.model = Text2TextModel(**model_config)
-            # self.model.initialize_model()
-            # self.current_model_name = model_config["model_name"]
+            self.model.initialize_model()
 
         if model_config["model_type"] == "audio" and model_config["model_name"] != self.current_model_name:
             if model_config["task"] == "transcribe" or model_config["task"] == "translate":
                 self.model = Speech2TextModel(**model_config)
             else:
                 self.model = Text2SpeechModel(**model_config)
-            # self.model.initialize_model()
-            # self.current_model_name = model_config["model_name"]
+            self.model.initialize_model()
 
         if model_config["model_type"] == "vision" and model_config["model_name"] != self.current_model_name:
             self.model = VisionModel(**model_config)
-            # self.model.initialize_model()
-            # self.current_model_name = model_config["model_name"]
+            self.model.initialize_model()
         if model_config["model_type"] == "images" and model_config["model_name"] != self.current_model_name:
             self.model = Text2ImageModel(**model_config)
-        self.model.initialize_model()
+            self.model.initialize_model()
+
         self.current_model_name = model_config["model_name"]
 
     def inference(self, model_config):
