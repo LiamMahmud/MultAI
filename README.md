@@ -48,19 +48,19 @@ To customize further the download of the models you can change the following com
 RUN gdown -q --folder "$DRIVE_LINK" -O /Api/
 ```
 Make sure it downloads a folder named ModlFiles and that it follows the following estructure:
-ModelFiles
-│
-├── Chat 
-│ └── Model folders 
-│ 
-├── Images 
-│ └── Model folders 
-│ 
-├── Vision 
-│ └── Model folders 
-│ 
-└── Vision 
- └── Model folders
+ModelFiles<br>
+│<br>
+├── Chat <br>
+│ └── Model folders <br>
+│ <br>
+├── Images <br>
+│ └── Model folders <br>
+│ <br>
+├── Vision <br>
+│ └── Model folders <br>
+│ <br>
+└── Vision <br>
+ └── Model folders<br>
  
 And also that each model contains a .ini file with the same of the folder that contains the size of the model.
 
