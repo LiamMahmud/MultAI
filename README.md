@@ -65,6 +65,9 @@ ModelFiles<br>
 And also that each model contains a .ini file with the same of the folder that contains the size of the model.
 
 The new model will be adressed as the foldername of the model.
+
+## Library
+For easier use of this API and for migration from Openai's API take a look at our library [openMultAI](https://github.com/LiamMahmud/openMultAI)
 ## Conclusion
 
 This setup allows to leverage powerful AI capabilities in their applications while maintaining control over the models and computational resources. By following these instructions, you can ensure that your AI API is ready to handle a wide range of tasks with efficiency and scalability.
