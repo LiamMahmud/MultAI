@@ -15,8 +15,8 @@ class MemoryHandler:
             if needed_RAM > self.get_available_RAM():
                 raise_memory_error("Not enough RAM, this model cannot be used in this device")
             if needed_VRAM > self.get_available_VRAM():
-                self.model_config["n_gpu_layers"] = opt_offload
                 self.model_config["device"] = "cpu"
+            self.model_config["n_gpu_layers"] = opt_offload
             return 200, self.model_config
         except Exception as e:
             return 400, str(e)

@@ -9,8 +9,6 @@ from QueueHandler.QueueHandler import Handler
 from ResponseHandler.InferenceHandler import InferenceHandler
 from api_error_handler import bad_request
 
-
-# Start API
 app = Flask(__name__)
 
 UPLOAD_FOLDER = './media'
