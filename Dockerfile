@@ -5,7 +5,6 @@ ARG DRIVE_LINK=https://drive.google.com/drive/u/2/folders/12ZD7djHeHcwr4b1q7-5Te
 # Set non-interactive installation mode
 ARG DEBIAN_FRONTEND=noninteractive
 
-
 # Install essential tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \

@@ -65,7 +65,7 @@ class MemoryHandler:
 
     def optimal_offload(self, model_size, number_layers):
         output = self.get_available_VRAM() * number_layers / model_size
-        return max(0, math.trunc(output) - 2)
+        return max(0, min(number_layers, math.trunc(output) - 2))
 
     @staticmethod
     def read_model_config(path, attribute):

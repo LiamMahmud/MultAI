@@ -9,9 +9,14 @@ from QueueHandler.QueueHandler import Handler
 from ResponseHandler.InferenceHandler import InferenceHandler
 from api_error_handler import bad_request
 
+
+# Start API
 app = Flask(__name__)
 
 UPLOAD_FOLDER = './media'
+
+memory_handler = InferenceHandler()
+queue_handler = Handler(memory_handler)
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -94,7 +99,6 @@ def vision():
     return jsonify(output)
 
 
-
 @app.route('/images/generations', methods=['POST'])
 def images():
     @after_this_request
@@ -141,8 +145,6 @@ def list_models():
     return models
 
 if __name__ == '__main__':
-    memory_handler = InferenceHandler()
-    queue_handler = Handler(memory_handler)
     app.run(host='0.0.0.0', port=5000)
 
 # serve(app, host='0.0.0.0', port=8080)

@@ -27,13 +27,10 @@ class Text2TextModel:
 
     def initialize_model(self):
         self.model = Llama(
-            model_path=self.model_path,  # Download the model file first
+            model_path=self.model_path,
             n_ctx=self.context_window,
-            # The max sequence length to use - note that longer sequence lengths require much more resources, maximum number of tokens that the model can account for when processing a response
             n_threads=self.n_threads,
-            # The number of CPU threads to use, tailor to your system and the resulting performance
             n_gpu_layers=self.n_gpu_layers
-            # The number of layers to offload to GPU, if you have GPU acceleration available
         )
 
     def inference(self,
@@ -50,8 +47,6 @@ class Text2TextModel:
                   **kwargs):
 
         self.validate_prompt(messages)
-        print("")
-        # noinspection PyTypeChecker
         output = self.model.create_chat_completion(messages=messages,
                                                    model=self.model_name,
                                                    temperature=temperature,

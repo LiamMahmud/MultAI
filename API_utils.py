@@ -83,8 +83,9 @@ def validate_audio_request(task):
 
 def validate_chat_request():
     model_config = request.get_json()
-    if "model_name" not in model_config:
-        return 400, "Model needs to be picked"
+    model_config["model_name"] = model_config["model"]
+    # if "model_name" not in model_config:
+    #     return 400, "Model needs to be picked"
     if "messages" not in model_config:
         return 400, "No messages sent"
     if not os.path.isdir(f'./ModelFiles/Chat/{model_config["model_name"]}'):
