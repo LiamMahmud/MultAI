@@ -38,7 +38,8 @@ EXPOSE 5000
 
 RUN mkdir -p /Api
 
-COPY . /Api/
+#COPY . /Api/
+RUN git clone https://github.com/LiamMahmud/MultAI /Api
 
 RUN gdown -q --folder "$DRIVE_LINK" -O /Api/
 

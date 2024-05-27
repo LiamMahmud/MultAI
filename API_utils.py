@@ -9,7 +9,7 @@ from flask import request
 UPLOAD_FOLDER = './media'
 
 
-def stream_output(queue_handler, generator, req):
+def stream_output(generator):
     try:
         for token in generator:
             if "content" in token['choices'][0]['delta']:
