@@ -11,10 +11,10 @@ ICON = "./BotFaceSinFondo.png"
 InfoIcon = "./InfoIcon.png"
 url = 'http://127.0.0.1:5000/chat/completions'
 
-model_config = {"model_name": "Mistral-7b", "n_gpu_layers": -1, "n_threads": 14, "main_gpu": 0,
-      "temperature": 0.1, "max_tokens": 512, "top_p": 0.95,
-     "top_k": 40, "stream": False, "presence_penalty": 0.0, "frequency_penalty": 0.0,
-     "repeat_penalty": 1.1, "stop": None
+model_config = {"model": "Mistral-7b", "n_gpu_layers": -1, "n_threads": 14,
+     "temperature": 0.1, "max_tokens": 512, "top_p": 0.95,
+     "top_k": 45, "stream": False, "presence_penalty": 0.0, "frequency_penalty": 0.0,
+     "repeat_penalty": 1.1, "stop": None, "priority": 0
      }
 
 # Configuraciones de la página
@@ -163,9 +163,9 @@ st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 #                                   "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
 #     return output
 
-def generate_response(prompt):
+def generate_response():
     response = requests.post(url, json=model_config)
-    print(response.json()["choices"][0]["message"])
+    print(response.json()["choices"][0]["message"]["content"])
     return response.json()["choices"][0]["message"]["content"]
 
 # User-provided prompt
@@ -178,8 +178,8 @@ if prompt := st.chat_input(disabled=not True):
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            model_config["prompt"] = [{"role": "user", "content": prompt}]
-            response = generate_response(prompt)
+            model_config["messages"] = [{"role": "user", "content": prompt}]
+            response = generate_response()
             placeholder = st.empty()
             full_response = ''
             # probar elemento write_stream
