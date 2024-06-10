@@ -45,8 +45,9 @@ def validate_audio_request(task):
             if file.filename == '':
                 return 400, 'No selected file'
             model_config = request.form.to_dict()
-            if "model_name" not in model_config:
+            if "model" not in model_config:
                 return 400, "Model needs to be picked"
+            model_config["model_name"] = model_config["model"]
             if not allowed_audio_file(file.filename):
                 print(file.filename)
                 return 400, "Not supported filetype"
@@ -64,8 +65,9 @@ def validate_audio_request(task):
                 return 200, model_config
         if task.lower() == "speech":
             model_config = request.form.to_dict()
-            if "model_name" not in model_config or "prompt" not in model_config:
-                return 400, "model_name and prompt are necessary keys"
+            if "model" not in model_config or "prompt" not in model_config:
+                return 400, "model and prompt are necessary keys"
+            model_config["model_name"] = model_config["model"]
             if not os.path.isdir(f'./ModelFiles/Audio/{model_config["model_name"]}'):
                 return 400, "The model does not exist in the server"
 
@@ -83,9 +85,9 @@ def validate_audio_request(task):
 
 def validate_chat_request():
     model_config = request.get_json()
+    if "model" not in model_config:
+        return 400, "Model needs to be picked"
     model_config["model_name"] = model_config["model"]
-    # if "model_name" not in model_config:
-    #     return 400, "Model needs to be picked"
     if "messages" not in model_config:
         return 400, "No messages sent"
     if not os.path.isdir(f'./ModelFiles/Chat/{model_config["model_name"]}'):
@@ -105,8 +107,9 @@ def validate_vision_request():
     try:
         model_config = request.get_json()
 
-        if "model_name" not in model_config:
+        if "model" not in model_config:
             return 400, "Model needs to be picked"
+        model_config["model_name"] = model_config["model"]
         if "messages" not in model_config:
             return 400, "No messages sent"
 
@@ -139,8 +142,9 @@ def validate_vision_request():
 def validate_image_request():
     try:
         model_config = request.get_json()
-        if "model_name" not in model_config or "prompt" not in model_config:
-            return 400, "model_name and prompt are necessary keys"
+        if "model" not in model_config or "prompt" not in model_config:
+            return 400, "model and prompt are necessary keys"
+        model_config["model_name"] = model_config["model"]
         if not os.path.isdir(f'./ModelFiles/Images/{model_config["model_name"]}'):
             return 400, "The model does not exist in the server"
 

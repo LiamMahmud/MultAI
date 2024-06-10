@@ -28,7 +28,6 @@ def chat():
             queue_handler.remove_request(req)
         finally:
             return response
-    # If the file exists and it is allowed
     code, model_config = validate_chat_request()
     if code != 200:
         return bad_request(str(model_config))
@@ -129,13 +128,11 @@ def images():
 def list_models():
     origin_folder = './ModelFiles'
     models = {}
-    # List directories at the first level
     for first_level in os.listdir(origin_folder):
         first_level_path = os.path.join(origin_folder, first_level)
         if os.path.isdir(first_level_path):  # Ensure it's a directory
             models.setdefault(first_level, [])
 
-            # List directories at the second level
             for second_level in os.listdir(first_level_path):
                 second_level_path = os.path.join(first_level_path, second_level)
                 if os.path.isdir(second_level_path):  # Ensure it's a directory

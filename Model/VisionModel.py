@@ -24,7 +24,6 @@ class VisionModel:
                 self.model_path,
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
-                # use_flash_attention_2=True,
                 load_in_4bit=True
             )
         else:
@@ -32,7 +31,6 @@ class VisionModel:
                 self.model_path,
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
-                # use_flash_attention_2=True,
             ).to(self.device)
         self.processor = AutoProcessor.from_pretrained(self.model_path)
 

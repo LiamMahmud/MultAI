@@ -8,7 +8,6 @@ class Speech2TextModel:
                  **kwargs):
         self.model_name = model_name
         self.model = None
-        # self.model_path = f'./ModelFiles/Audio/Whisper/{model_name}.pt'
         self.device = device
 
     def initialize_model(self):
