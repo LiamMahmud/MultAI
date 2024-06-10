@@ -32,7 +32,7 @@ docker run --gpus all -d -p 5000:your_port --name your_container_name your_image
 
 ### Custom Models Setup
 
-The API downloads models from a specified Google Drive folder. You can customize which models to download by setting up your own Google Drive folder with the desired models, ensuring it follows the same structure as the one currently used.
+The API downloads models from a specified [Google Drive folder](https://drive.google.com/drive/u/2/folders/12ZD7djHeHcwr4b1q7-5Te_AfGucl3627). You can customize which models to download by setting up your own Google Drive folder with the desired models, ensuring it follows the same structure as the one currently used.
 
 #### Model Restrictions
 
